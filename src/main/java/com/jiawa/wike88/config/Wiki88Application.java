@@ -1,11 +1,13 @@
-package com.jiawa.wike88;
+package com.jiawa.wike88.config;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.Environment;
 
+@ComponentScan("com.jiawa")
 @SpringBootApplication
 public class Wiki88Application {
 	private static final Logger LOG = LoggerFactory.getLogger(Wiki88Application.class);
