@@ -1,5 +1,6 @@
-package com.jiawa.wike88.config;
+package com.jiawa.wiki88.config;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -9,6 +10,7 @@ import org.springframework.core.env.Environment;
 
 @ComponentScan("com.jiawa")
 @SpringBootApplication
+@MapperScan("com.jiawa.wiki88.mapper")
 public class Wiki88Application {
 	private static final Logger LOG = LoggerFactory.getLogger(Wiki88Application.class);
 	public static void main(String[] args) {
