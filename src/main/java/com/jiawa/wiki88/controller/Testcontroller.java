@@ -36,7 +36,6 @@ public class Testcontroller {
 
     @GetMapping("/test/list")
     public List<Test> list(){
-
         return testService.list();
     }
 }
