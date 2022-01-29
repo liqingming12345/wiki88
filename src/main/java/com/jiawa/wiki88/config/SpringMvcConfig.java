@@ -1,3 +1,4 @@
+/*
 package com.jiawa.wiki88.config;
 
 import com.jiawa.wiki88.interceptor.LogInterceptor;
@@ -18,3 +19,4 @@ public class SpringMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**").excludePathPatterns("/login");
     }
 }
+*/
