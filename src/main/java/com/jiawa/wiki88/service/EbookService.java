@@ -1,11 +1,16 @@
 package com.jiawa.wiki88.service;
 
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.jiawa.wiki88.domain.Ebook;
 import com.jiawa.wiki88.domain.EbookExample;
 import com.jiawa.wiki88.mapper.EbookMapper;
 import com.jiawa.wiki88.req.EbookReq;
 import com.jiawa.wiki88.resp.EbookResp;
+import com.jiawa.wiki88.resp.PageResp;
 import com.jiawa.wiki88.util.CopyUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
@@ -18,16 +23,23 @@ import java.util.List;
 @Service
 public class EbookService {
 
+    private static final Logger LOG = LoggerFactory.getLogger(EbookService.class);
+
     @Resource
     private EbookMapper ebookMapper;
 
-    public List<EbookResp> list(EbookReq req ){
+    public PageResp<EbookResp> list(EbookReq req ){
         EbookExample ebookExample = new EbookExample();
         EbookExample.Criteria criteria = ebookExample.createCriteria();
         if (!ObjectUtils.isEmpty(req.getName())) {
             criteria.andNameLike("%" + req.getName() + "%");
         }
+        PageHelper.startPage(req.getPage(),req.getSize());
         List<Ebook> ebookList = ebookMapper.selectByExample(ebookExample);
+
+        PageInfo<Ebook> pageInfo = new PageInfo<>(ebookList);
+        LOG.info("总行数：{}", pageInfo.getTotal());
+        LOG.info("总页数：{}", pageInfo.getPages());
 
        /* List<EbookResp> respList = new ArrayList<>();
         for (Ebook ebook : ebookList) {
@@ -38,9 +50,14 @@ public class EbookService {
             respList.add(ebookResp);
         }*/
 
+
         //列表复制
         List<EbookResp> list = CopyUtil.copyList(ebookList, EbookResp.class);
 
-        return list;
+        PageResp<EbookResp> pageResp = new PageResp();
+        pageResp.setTotal(pageInfo.getTotal());
+        pageResp.setList(list);
+
+        return pageResp;
     }
 }
