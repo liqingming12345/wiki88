@@ -97,7 +97,7 @@ export default defineComponent({
         ebooks.value = data.content.list;
 
         // 重置分页按钮
-        pagination.value.current = p.page;
+        pagination.value.current = params.page;
         pagination.value.total = data.content.total;
       });
     };
