@@ -3,8 +3,6 @@ package com.jiawa.wiki88.util;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 /**
  * Twitter的分布式自增ID雪花算法
@@ -103,11 +101,11 @@ public class SnowFlake {
     public static void main(String[] args) throws ParseException {
         // 时间戳
         // System.out.println(System.currentTimeMillis());
-         //System.out.println(new Date().getTime());
+        // System.out.println(new Date().getTime());
         //
-         //String dateTime = "2021-01-01 08:00:00";
-         //SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-         //System.out.println(sdf.parse(dateTime).getTime());
+        // String dateTime = "2021-01-01 08:00:00";
+        // SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        // System.out.println(sdf.parse(dateTime).getTime());
 
         SnowFlake snowFlake = new SnowFlake(1, 1);
 
