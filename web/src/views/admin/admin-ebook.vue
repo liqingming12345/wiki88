@@ -200,7 +200,7 @@ export default defineComponent({
           //重新加载列表
           handleQuery({
             page: pagination.value.current,
-            size: pagination.value.pageSize
+            size: pagination.value.pageSize,
           });
         }
       });
@@ -209,7 +209,7 @@ export default defineComponent({
     onMounted(() => {
       handleQuery({
         page: 1,
-        size: pagination.value.pageSize
+        size: pagination.value.pageSize,
       });
     });
 
