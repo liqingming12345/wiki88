@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/demo")
-public class Democontroller {
+public class DemoController {
 
     @Resource
     private DemoService demoService;
