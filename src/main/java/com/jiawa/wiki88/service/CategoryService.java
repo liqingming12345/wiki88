@@ -30,11 +30,23 @@ public class CategoryService {
     @Resource
     private SnowFlake snowFlake;
 
-    public PageResp<CategoryQueryResp> list(CategoryQueryReq req ){
+    public List<CategoryQueryResp> all() {
         CategoryExample categoryExample = new CategoryExample();
+        categoryExample.setOrderByClause("sort asc");
+        List<Category> categoryList = categoryMapper.selectByExample(categoryExample);
+
+        // 列表复制
+        List<CategoryQueryResp> list = CopyUtil.copyList(categoryList, CategoryQueryResp.class);
+
+        return list;
+    }
+
+    public PageResp<CategoryQueryResp> list(CategoryQueryReq req) {
+        CategoryExample categoryExample = new CategoryExample();
+        categoryExample.setOrderByClause("sort asc");
         CategoryExample.Criteria criteria = categoryExample.createCriteria();
 
-        PageHelper.startPage(req.getPage(),req.getSize());
+        PageHelper.startPage(req.getPage(), req.getSize());
         List<Category> categoryList = categoryMapper.selectByExample(categoryExample);
 
         PageInfo<Category> pageInfo = new PageInfo<>(categoryList);
@@ -64,19 +76,21 @@ public class CategoryService {
     /**
      * 保存
      */
-    public void save(CategorySaveReq req){
+    public void save(CategorySaveReq req) {
         Category category = CopyUtil.copy(req, Category.class);
-        if(ObjectUtils.isEmpty(req.getId())){
+        if (ObjectUtils.isEmpty(req.getId())) {
             //新增
             category.setId(snowFlake.nextId());
             categoryMapper.insert(category);
-        }else {
+        } else {
             //更新
             categoryMapper.updateByPrimaryKey(category);
         }
     }
 
-    public void delete(Long id){
+    public void delete(Long id) {
         categoryMapper.deleteByPrimaryKey(id);
     }
+
+
 }
