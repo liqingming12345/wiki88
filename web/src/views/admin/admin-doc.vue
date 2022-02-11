@@ -3,86 +3,111 @@
     <a-layout-content
         :style="{ background: '#fff', padding: '24px', margin: 0, minHeight: '280px' }"
     >
-      <p>
-        <a-form layout="inline" :model="param">
-          <a-form-item>
-            <a-button type="primary" @click="handleQuery()">
-              查询
-            </a-button>
-          </a-form-item>
-          <a-form-item>
-            <a-button type="primary" @click="add()">
-              新增
-            </a-button>
-          </a-form-item>
-        </a-form>
-      </p>
-      <a-table
-          :columns="columns"
-          :row-key="record => record.id"
-          :data-source="level1"
-          :loading="loading"
-          :pagination="false"
-      >
-        <template #cover="{ text: cover }">
-          <img v-if="cover" :src="cover" alt="avatar" />
-        </template>
-        <template v-slot:action="{ text, record }">
-          <a-space size="small">
-            <a-button type="primary" @click="edit(record)">
-              编辑
-            </a-button>
-            <a-popconfirm
-                title="删除后不可恢复，确认删除?"
-                ok-text="是"
-                cancel-text="否"
-                @confirm="handleDelete(record.id)"
+        <a-row :gutter="24">
+          <a-col :span="8">
+            <p>
+              <a-form layout="inline" :model="param">
+                <a-form-item>
+                  <a-button type="primary" @click="handleQuery()">
+                    查询
+                  </a-button>
+                </a-form-item>
+                <a-form-item>
+                  <a-button type="primary" @click="add()">
+                    新增
+                  </a-button>
+                </a-form-item>
+              </a-form>
+            </p>
+            <a-table
+                v-if="level1.length > 0"
+                :columns="columns"
+                :row-key="record => record.id"
+                :data-source="level1"
+                :loading="loading"
+                :pagination="false"
+                size="small"
+                :defaultExpandAllRows="true"
             >
-              <a-button type="danger">
-                删除
-              </a-button>
-            </a-popconfirm>
-          </a-space>
-        </template>
-      </a-table>
+              <template #name="{ text, record }">
+                {{ record.sort }} {{ text }}
+              </template>
+              <template v-slot:action="{ text, record }">
+                <a-space size="small">
+                  <a-button type="primary" @click="edit(record)" size="small">
+                    编辑
+                  </a-button>
+                  <a-popconfirm
+                      title="删除后不可恢复，确认删除?"
+                      ok-text="是"
+                      cancel-text="否"
+                      @confirm="handleDelete(record.id)"
+                  >
+                    <a-button type="danger" size="small">
+                      删除
+                    </a-button>
+                  </a-popconfirm>
+                </a-space>
+              </template>
+            </a-table>
+          </a-col>
+          <a-col :span="16">
+            <p>
+              <a-form layout="inline" :model="param">
+                <a-form-item>
+                  <a-button type="primary" @click="handleSave()">
+                    保存
+                  </a-button>
+                </a-form-item>
+              </a-form>
+            </p>
+            <a-form :model="doc" layout="vertical">
+              <a-form-item>
+                <a-input v-model:value="doc.name" placeholder="名称"/>
+              </a-form-item>
+              <a-form-item>
+                <a-tree-select
+                    v-model:value="doc.parent"
+                    style="width: 100%"
+                    :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
+                    :tree-data="treeSelectData"
+                    placeholder="请选择父文档"
+                    tree-default-expand-all
+                    :replaceFields="{title: 'name', key: 'id', value: 'id'}"
+                >
+                </a-tree-select>
+              </a-form-item>
+              <a-form-item>
+                <a-input v-model:value="doc.sort" placeholder="顺序"/>
+              </a-form-item>
+              <a-form-item>
+                <div id="content"></div>
+              </a-form-item>
+            </a-form>
+          </a-col>
+        </a-row>
+
     </a-layout-content>
   </a-layout>
 
-  <a-modal
-      title="文档表单"
-      v-model:visible="modalVisible"
-      :confirm-loading="modalLoading"
-      @ok="handleModalOk"
-  >
-    <a-form :model="doc" :label-col="{ span: 6 }" :wrapper-col="{ span: 18 }">
-      <a-form-item label="名称">
-        <a-input v-model:value="doc.name" />
-      </a-form-item>
-      <a-form-item label="父文档">
-        <a-tree-select
-            v-model:value="doc.parent"
-            style="width: 100%"
-            :dropdown-style="{ maxHeight: '400px', overflow: 'auto' }"
-            :tree-data="treeSelectData"
-            placeholder="请选择父文档"
-            tree-default-expand-all
-            :replaceFields="{title: 'name', key: 'id', value: 'id'}"
-        >
-        </a-tree-select>
-      </a-form-item>
-      <a-form-item label="顺序">
-        <a-input v-model:value="doc.sort" />
-      </a-form-item>
-    </a-form>
-  </a-modal>
+  <!--<a-modal-->
+  <!--  title="文档表单"-->
+  <!--  v-model:visible="modalVisible"-->
+  <!--  :confirm-loading="modalLoading"-->
+  <!--  @ok="handleModalOk"-->
+  <!--&gt;-->
+  <!--  -->
+  <!--</a-modal>-->
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from 'vue';
+import {defineComponent, onMounted, ref, createVNode} from 'vue';
 import axios from 'axios';
-import { message } from 'ant-design-vue';
+import {message, Modal} from 'ant-design-vue';
 import {Tool} from "@/util/tool";
 import {useRoute} from "vue-router";
+import ExclamationCircleOutlined from "@ant-design/icons-vue/ExclamationCircleOutlined";
+import E from 'wangeditor'
 
 export default defineComponent({
   name: 'AdminDoc',
@@ -103,21 +128,13 @@ export default defineComponent({
     const columns = [
       {
         title: '名称',
-        dataIndex: 'name'
-      },
-      {
-        title: '父文档',
-        key: 'parent',
-        dataIndex: 'parent'
-      },
-      {
-        title: '顺序',
-        dataIndex: 'sort'
+        dataIndex: 'name',
+        slots: {customRender: 'name'}
       },
       {
         title: 'Action',
         key: 'action',
-        slots: { customRender: 'action' }
+        slots: {customRender: 'action'}
       }
     ];
 
@@ -133,7 +150,7 @@ export default defineComponent({
      * }]
      */
     const level1 = ref(); // 一级文档树，children属性就是二级文档
-
+    level1.value = [];
     /**
      * 数据查询
      **/
@@ -164,7 +181,10 @@ export default defineComponent({
     const doc = ref({});
     const modalVisible = ref(false);
     const modalLoading = ref(false);
-    const handleModalOk = () => {
+    const editor = new E('#content');
+    editor.config.zIndex = 0;
+
+    const handleSave = () => {
       modalLoading.value = true;
       axios.post("/doc/save", doc.value).then((response) => {
         modalLoading.value = false;
@@ -211,6 +231,41 @@ export default defineComponent({
       }
     };
 
+    const deleteIds: Array<string> = [];
+    const deleteNames: Array<string> = [];
+    /**
+     * 查找整根树枝
+     */
+    const getDeleteIds = (treeSelectData: any, id: any) => {
+      // console.log(treeSelectData, id);
+      // 遍历数组，即遍历某一层节点
+      for (let i = 0; i < treeSelectData.length; i++) {
+        const node = treeSelectData[i];
+        if (node.id === id) {
+          // 如果当前节点就是目标节点
+          console.log("delete", node);
+          // 将目标ID放入结果集ids
+          // node.disabled = true;
+          deleteIds.push(id);
+          deleteNames.push(node.name);
+
+          // 遍历所有子节点
+          const children = node.children;
+          if (Tool.isNotEmpty(children)) {
+            for (let j = 0; j < children.length; j++) {
+              getDeleteIds(children, children[j].id)
+            }
+          }
+        } else {
+          // 如果当前节点不是目标节点，则到其子节点再找找看。
+          const children = node.children;
+          if (Tool.isNotEmpty(children)) {
+            getDeleteIds(children, id);
+          }
+        }
+      }
+    };
+
     /**
      * 编辑
      */
@@ -224,6 +279,9 @@ export default defineComponent({
 
       // 为选择树添加一个"无"
       treeSelectData.value.unshift({id: 0, name: '无'});
+      setTimeout(function () {
+        editor.create();
+      }, 100);
     };
 
     /**
@@ -239,16 +297,33 @@ export default defineComponent({
 
       // 为选择树添加一个"无"
       treeSelectData.value.unshift({id: 0, name: '无'});
-
+      setTimeout(function () {
+        editor.create();
+      }, 100);
     };
 
     const handleDelete = (id: number) => {
-      axios.delete("/doc/delete/" + id).then((response) => {
-        const data = response.data; // data = commonResp
-        if (data.success) {
-          // 重新加载列表
-          handleQuery();
-        }
+      // console.log(level1, level1.value, id)
+      // 清空数组，否则多次删除时，数组会一直增加
+      deleteIds.length = 0;
+      deleteNames.length = 0;
+      getDeleteIds(level1.value, id);
+      Modal.confirm({
+        title: '重要提醒',
+        icon: createVNode(ExclamationCircleOutlined),
+        content: '将删除：【' + deleteNames.join("，") + "】删除后不可恢复，确认删除？",
+        onOk() {
+          // console.log(ids)
+          axios.delete("/doc/delete/" + deleteIds.join(",")).then((response) => {
+            const data = response.data; // data = commonResp
+            if (data.success) {
+              // 重新加载列表
+              handleQuery();
+
+              editor.create();
+            }
+          });
+        },
       });
     };
 
@@ -270,7 +345,7 @@ export default defineComponent({
       doc,
       modalVisible,
       modalLoading,
-      handleModalOk,
+      handleSave,
 
       handleDelete,
 
