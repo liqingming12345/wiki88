@@ -2,8 +2,10 @@ package com.jiawa.wiki88.service;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.jiawa.wiki88.domain.Content;
 import com.jiawa.wiki88.domain.Doc;
 import com.jiawa.wiki88.domain.DocExample;
+import com.jiawa.wiki88.mapper.ContentMapper;
 import com.jiawa.wiki88.mapper.DocMapper;
 import com.jiawa.wiki88.req.DocQueryReq;
 import com.jiawa.wiki88.req.DocSaveReq;
@@ -28,6 +30,9 @@ public class DocService {
     private DocMapper docMapper;
 
     @Resource
+    private ContentMapper contentMapper;
+
+    @Resource
     private SnowFlake snowFlake;
 
     public List<DocQueryResp> all() {
@@ -45,7 +50,6 @@ public class DocService {
         DocExample docExample = new DocExample();
         docExample.setOrderByClause("sort asc");
         DocExample.Criteria criteria = docExample.createCriteria();
-
         PageHelper.startPage(req.getPage(), req.getSize());
         List<Doc> docList = docMapper.selectByExample(docExample);
 
@@ -53,17 +57,17 @@ public class DocService {
         LOG.info("总行数：{}", pageInfo.getTotal());
         LOG.info("总页数：{}", pageInfo.getPages());
 
-       /* List<DocResp> respList = new ArrayList<>();
-        for (Doc doc : docList) {
-           // DocResp docResp = new DocResp();
-           // BeanUtils.copyProperties(doc,docResp);
-           //对象复制
-            DocResp docResp = CopyUtil.copy(doc, DocResp.class);
-            respList.add(docResp);
-        }*/
+        // List<DocResp> respList = new ArrayList<>();
+        // for (Doc doc : docList) {
+        //     // DocResp docResp = new DocResp();
+        //     // BeanUtils.copyProperties(doc, docResp);
+        //     // 对象复制
+        //     DocResp docResp = CopyUtil.copy(doc, DocResp.class);
+        //
+        //     respList.add(docResp);
+        // }
 
-
-        //列表复制
+        // 列表复制
         List<DocQueryResp> list = CopyUtil.copyList(docList, DocQueryResp.class);
 
         PageResp<DocQueryResp> pageResp = new PageResp();
@@ -78,13 +82,21 @@ public class DocService {
      */
     public void save(DocSaveReq req) {
         Doc doc = CopyUtil.copy(req, Doc.class);
+        Content content = CopyUtil.copy(req, Content.class);
         if (ObjectUtils.isEmpty(req.getId())) {
-            //新增
+            // 新增
             doc.setId(snowFlake.nextId());
             docMapper.insert(doc);
+
+            content.setId(doc.getId());
+            contentMapper.insert(content);
         } else {
-            //更新
+            // 更新
             docMapper.updateByPrimaryKey(doc);
+            int count = contentMapper.updateByPrimaryKeyWithBLOBs(content);
+            if (count == 0) {
+                contentMapper.insert(content);
+            }
         }
     }
 
@@ -98,6 +110,4 @@ public class DocService {
         criteria.andIdIn(ids);
         docMapper.deleteByExample(docExample);
     }
-
-
 }
