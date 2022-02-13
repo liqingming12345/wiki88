@@ -6,10 +6,13 @@ import com.jiawa.wiki88.resp.CommonResp;
 import com.jiawa.wiki88.resp.UserQueryResp;
 import com.jiawa.wiki88.resp.PageResp;
 import com.jiawa.wiki88.service.UserService;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
+import java.nio.charset.StandardCharsets;
+import java.security.DigestException;
 
 @RestController
 @RequestMapping("/user")
@@ -28,6 +31,7 @@ public class UserController {
 
     @PostMapping("/save")
     public CommonResp save(@Valid @RequestBody UserSaveReq req) {
+        req.setPassword(DigestUtils.md5DigestAsHex(req.getPassword().getBytes()));
         CommonResp resp = new CommonResp<>();
         userService.save(req);
         return resp;
