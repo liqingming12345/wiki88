@@ -39,7 +39,9 @@
             </template>
             <a-list-item-meta :description="item.description">
               <template #title>
-                <a :href="item.href">{{ item.name }}</a>
+                <router-link :to="'/doc?ebookId=' + item.id">
+                  {{ item.name }}
+                </router-link>
               </template>
               <template #avatar>
                 <a-avatar :src="item.cover"/>
@@ -115,21 +117,21 @@ export default defineComponent({
       });
     };
 
-            const handleClick = (value: any) => {
-            // console.log("menu click", value)
-                if (value.key === 'welcome') {
-                isShowWelcome.value = true;
-              } else {
-                categoryId2 = value.key;
-                isShowWelcome.value = false;
-                handleQueryEbook();
-              }
-            // isShowWelcome.value = value.key === 'welcome';
-              };
+    const handleClick = (value: any) => {
+      // console.log("menu click", value)
+      if (value.key === 'welcome') {
+        isShowWelcome.value = true;
+      } else {
+        categoryId2 = value.key;
+        isShowWelcome.value = false;
+        handleQueryEbook();
+      }
+      // isShowWelcome.value = value.key === 'welcome';
+    };
 
-            onMounted(() => {
-                handleQueryCategory();
-                // handleQueryEbook();
+    onMounted(() => {
+      handleQueryCategory();
+      // handleQueryEbook();
     });
 
     return {
