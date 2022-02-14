@@ -7,8 +7,11 @@ import com.jiawa.wiki88.domain.UserExample;
 import com.jiawa.wiki88.exception.BusinessException;
 import com.jiawa.wiki88.exception.BusinessExceptionCode;
 import com.jiawa.wiki88.mapper.UserMapper;
+import com.jiawa.wiki88.req.UserLoginReq;
 import com.jiawa.wiki88.req.UserQueryReq;
+import com.jiawa.wiki88.req.UserResetPasswordReq;
 import com.jiawa.wiki88.req.UserSaveReq;
+import com.jiawa.wiki88.resp.UserLoginResp;
 import com.jiawa.wiki88.resp.UserQueryResp;
 import com.jiawa.wiki88.resp.PageResp;
 import com.jiawa.wiki88.util.CopyUtil;
@@ -102,6 +105,37 @@ public class UserService {
             return null;
         } else {
             return userList.get(0);
+        }
+    }
+
+    /**
+     * +     * 修改密码
+     * +
+     */
+    public void resetPassword(UserResetPasswordReq req) {
+        User user = CopyUtil.copy(req, User.class);
+        userMapper.updateByPrimaryKeySelective(user);
+    }
+
+    /**
+     * 登录
+     */
+    public UserLoginResp login(UserLoginReq req) {
+        User userDb = selectByLoginName(req.getLoginName());
+        if (ObjectUtils.isEmpty(userDb)) {
+            // 用户名不存在
+            LOG.info("用户名不存在, {}", req.getLoginName());
+            throw new BusinessException(BusinessExceptionCode.USER_LOGIN_NAME_EXIST);
+        } else {
+            if (userDb.getPassword().equals(req.getPassword())) {
+                // 登录成功
+                UserLoginResp userLoginResp = CopyUtil.copy(userDb, UserLoginResp.class);
+                return userLoginResp;
+            } else {
+                // 密码不对
+                LOG.info("密码不对, 输入密码：{}, 数据库密码：{}", req.getPassword(), userDb.getPassword());
+                throw new BusinessException(BusinessExceptionCode.USER_LOGIN_NAME_EXIST);
+            }
         }
     }
 }
