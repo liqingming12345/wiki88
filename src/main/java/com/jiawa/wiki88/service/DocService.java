@@ -7,6 +7,7 @@ import com.jiawa.wiki88.domain.Doc;
 import com.jiawa.wiki88.domain.DocExample;
 import com.jiawa.wiki88.mapper.ContentMapper;
 import com.jiawa.wiki88.mapper.DocMapper;
+import com.jiawa.wiki88.mapper.DocMapperCust;
 import com.jiawa.wiki88.req.DocQueryReq;
 import com.jiawa.wiki88.req.DocSaveReq;
 import com.jiawa.wiki88.resp.DocQueryResp;
@@ -28,6 +29,9 @@ public class DocService {
 
     @Resource
     private DocMapper docMapper;
+
+    @Resource
+    private DocMapperCust docMapperCust;
 
     @Resource
     private ContentMapper contentMapper;
@@ -87,6 +91,8 @@ public class DocService {
         if (ObjectUtils.isEmpty(req.getId())) {
             // 新增
             doc.setId(snowFlake.nextId());
+            doc.setViewCount(0);
+            doc.setVoteCount(0);
             docMapper.insert(doc);
 
             content.setId(doc.getId());
@@ -114,6 +120,8 @@ public class DocService {
 
     public String findContent(Long id) {
         Content content = contentMapper.selectByPrimaryKey(id);
+        //文档阅读数+1
+        docMapperCust.increaseViewCount(id);
         if (ObjectUtils.isEmpty(content)) {
             return "";
         } else {
