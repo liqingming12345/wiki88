@@ -1,7 +1,6 @@
-/*
 package com.jiawa.wiki88.config;
 
-import com.jiawa.wiki88.interceptor.LogInterceptor;
+import com.jiawa.wiki88.interceptor.LoginInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -12,11 +11,20 @@ import javax.annotation.Resource;
 public class SpringMvcConfig implements WebMvcConfigurer {
 
     @Resource
-    LogInterceptor loginInterceptor;
+    LoginInterceptor loginInterceptor;
 
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(loginInterceptor)
-                .addPathPatterns("/**").excludePathPatterns("/login");
+                .addPathPatterns("/**")
+                .excludePathPatterns(
+                        "/test/**",
+                        "/redis/**",
+                        "/user/login",
+                        "/category/all",
+                        "/ebook/list",
+                        "/doc/all/**",
+                        "/doc/find-content/**"
+                );
     }
 }
-*/
+
