@@ -1,10 +1,9 @@
 <template>
   <a-layout-header class="header">
-    <div class="logo"/>
+    <div class="logo" />
     <a-menu
         theme="dark"
         mode="horizontal"
-        v-model:selectedKeys="selectedKeys1"
         :style="{ lineHeight: '64px' }"
     >
       <a-menu-item key="/">
@@ -22,7 +21,17 @@
       <a-menu-item key="/about">
         <router-link to="/about">关于我们</router-link>
       </a-menu-item>
-      <a class="login-menu" v-show="user.id" >
+      <a-popconfirm
+          title="确认退出登录?"
+          ok-text="是"
+          cancel-text="否"
+          @confirm="logout()"
+      >
+        <a class="login-menu" v-show="user.id">
+          <span>退出登录</span>
+        </a>
+      </a-popconfirm>
+      <a class="login-menu" v-show="user.id">
         <span>您好：{{user.name}}</span>
       </a>
       <a class="login-menu" v-show="!user.id" @click="showLoginModal">
@@ -38,10 +47,10 @@
     >
       <a-form :model="loginUser" :label-col="{ span: 6 }" :wrapper-col="{ span: 18 }">
         <a-form-item label="登录名">
-          <a-input v-model:value="loginUser.loginName"/>
+          <a-input v-model:value="loginUser.loginName" />
         </a-form-item>
         <a-form-item label="密码">
-          <a-input v-model:value="loginUser.password" type="password"/>
+          <a-input v-model:value="loginUser.password" type="password" />
         </a-form-item>
       </a-form>
     </a-modal>
@@ -49,9 +58,9 @@
 </template>
 
 <script lang="ts">
-import {computed, defineComponent, ref,computed} from 'vue';
+import { defineComponent, ref, computed } from 'vue';
 import axios from 'axios';
-import {message} from 'ant-design-vue';
+import { message } from 'ant-design-vue';
 import store from "@/store";
 
 declare let hexMd5: any;
@@ -59,14 +68,14 @@ declare let KEY: any;
 
 export default defineComponent({
   name: 'the-header',
-  setup() {
-    //登陆后保存
+  setup () {
+    // 登录后保存
     const user = computed(() => store.state.user);
 
-    //用来登录
+    // 用来登录
     const loginUser = ref({
-      loginName: "test1",
-      password: "qq111111"
+      loginName: "test",
+      password: "test123"
     });
     const loginModalVisible = ref(false);
     const loginModalLoading = ref(false);
@@ -85,7 +94,22 @@ export default defineComponent({
         if (data.success) {
           loginModalVisible.value = false;
           message.success("登录成功！");
-          store.commit("setUser",user.value);
+
+          store.commit("setUser", data.content);
+        } else {
+          message.error(data.message);
+        }
+      });
+    };
+
+    // 退出登录
+    const logout = () => {
+      console.log("退出登录开始");
+      axios.get('/user/logout/' + user.value.token).then((response) => {
+        const data = response.data;
+        if (data.success) {
+          message.success("退出登录成功！");
+          store.commit("setUser", {});
         } else {
           message.error(data.message);
         }
@@ -98,7 +122,8 @@ export default defineComponent({
       showLoginModal,
       loginUser,
       login,
-      user
+      user,
+      logout
     }
   }
 });
@@ -108,5 +133,6 @@ export default defineComponent({
 .login-menu {
   float: right;
   color: white;
+  padding-left: 10px;
 }
 </style>
