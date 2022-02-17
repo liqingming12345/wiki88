@@ -44,7 +44,10 @@ public class DocService {
     private SnowFlake snowFlake;
 
     @Resource
-    private RedisUtil redisUtil;
+    public RedisUtil redisUtil;
+
+    @Resource
+    public WsService wsService;
 
     public List<DocQueryResp> all(Long ebookId) {
         DocExample docExample = new DocExample();
@@ -127,7 +130,7 @@ public class DocService {
 
     public String findContent(Long id) {
         Content content = contentMapper.selectByPrimaryKey(id);
-        //文档阅读数+1
+        // 文档阅读数+1
         docMapperCust.increaseViewCount(id);
         if (ObjectUtils.isEmpty(content)) {
             return "";
@@ -140,17 +143,21 @@ public class DocService {
      * 点赞
      */
     public void vote(Long id) {
-        //docMapperCust.increaseVoteCount(id);
-        //远程IP+doc.id作为key,24小时内不能重复
+        // docMapperCust.increaseVoteCount(id);
+        // 远程IP+doc.id作为key，24小时内不能重复
         String ip = RequestContext.getRemoteAddr();
-        if(redisUtil.validateRepeat("DOC_VOTE_" + id + "_" + ip,3600*24)){
-           docMapperCust.increaseVoteCount(id);
-        }else{
+        if (redisUtil.validateRepeat("DOC_VOTE_" + id + "_" + ip, 3600 * 24)) {
+            docMapperCust.increaseVoteCount(id);
+        } else {
             throw new BusinessException(BusinessExceptionCode.VOTE_REPEAT);
         }
+
+        // 推送消息
+        Doc docDb = docMapper.selectByPrimaryKey(id);
+        wsService.sendInfo("【" + docDb.getName() + "】被点赞！");
     }
 
-    public void updateEbookInfo(){
+    public void updateEbookInfo() {
         docMapperCust.updateEbookInfo();
     }
 }
